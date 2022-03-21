@@ -1,0 +1,30 @@
+name: "dbt_snow_utils"
+version: "1.0.0"
+config-version: 2
+require-dbt-version: ">=0.18.0"
+
+# These configurations specify where dbt should look for different types of files.
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+log-path: "logs"
+target-path: "target"
+clean-targets: ["target", "dbt_modules", "logs"]
+
+vars:
+  start_date: CURRENT_DATE()
+  hours: 36
+
+# Config indicated by + and applies to all files under models
+models:
+  dbt_snow_utils:
+    +materialized: table
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table
+    presentation:
+      +materialized: view

@@ -15,8 +15,11 @@ target-path: "target"
 clean-targets: ["target", "dbt_modules", "logs"]
 
 vars:
-  start_date: CURRENT_DATE()
-  hours: 36
+  filter_by_date: 
+  pipe_copy_history_filter_key: "hours"
+  pipe_copy_history_filter_value: -36
+  pipe_usage_history_filter_key: "day"
+  pipe_usage_history_filter_value: -2
 
 # Config indicated by + and applies to all files under models
 models:
@@ -25,6 +28,6 @@ models:
     staging:
       +materialized: view
     marts:
-      +materialized: table
+      +materialized: incremental
     presentation:
       +materialized: view

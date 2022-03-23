@@ -38,6 +38,6 @@ SELECT DATE (LAST_LOAD_TIME) AS LOAD_DATE,
 	PIPE_RECEIVED_TIME,
 	CONVERT_TIMEZONE('America/Los_Angeles', 'UTC', current_timestamp) AS CREATED_TIMESTAMP,
 	'{{model_id}}' AS CREATED_BY
-FROM TABLE (INFORMATION_SCHEMA.COPY_HISTORY(table_name => '{{table_full_name|upper}}', start_time => dateadd(hours, - {{ var('hours') }}, current_timestamp())))
+FROM TABLE (INFORMATION_SCHEMA.COPY_HISTORY(table_name => '{{table_full_name|upper}}', start_time => dateadd({{ var('pipe_copy_history_filter_key') }}, {{ var('pipe_copy_history_filter_value') }}, current_timestamp())))
 
 {% endfor %}

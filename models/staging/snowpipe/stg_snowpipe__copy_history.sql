@@ -5,14 +5,19 @@
     tags=["staging","snowpipe"]
     ) }}
 
-{% set pipe_details = get_snowpipe_details() %}
-{% set model_id = model.unique_id | string %}
+{%- set pipe_details = get_snowpipe_details() -%}
+{%- set model_id = model.unique_id | string -%}
+{%- set loop_counter = namespace(value=0) -%}
 
 {% for pipe_detail in pipe_details %}
 
-{%- if not loop.first %} UNION ALL {% endif %}
+{%- set pipe_database_name = pipe_detail[1] -%}
+{%- set table_full_name = pipe_detail[7] -%}
 
-{% set table_full_name = pipe_detail[7] %}
+{%- if (var('pipe_databases')|upper == 'ALL') or (pipe_database_name|upper in var('pipe_databases')|upper) -%}
+
+{%- if (not loop.first) and (loop_counter.value != 0) %} UNION ALL {% endif %}
+{%- set loop_counter.value = loop_counter.value + 1 -%}
 
 SELECT DATE (LAST_LOAD_TIME) AS LOAD_DATE,
 	{{ dbt_utils.surrogate_key(['FILE_NAME','STAGE_LOCATION', 'LOAD_DATE']) }} AS RECORD_ID,

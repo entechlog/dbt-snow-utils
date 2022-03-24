@@ -4,6 +4,8 @@ config-version: 2
 require-dbt-version: ">=0.18.0"
 
 vars:
+  # Valid values are string "ALL" OR list of databases
+  pipe_databases: ['DEMO_DB','DEMO_DB_TEST']
   filter_by_date: 
   pipe_copy_history_filter_key: "hours"
   pipe_copy_history_filter_value: -36

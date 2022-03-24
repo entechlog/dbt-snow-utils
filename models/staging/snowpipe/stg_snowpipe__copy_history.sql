@@ -45,4 +45,5 @@ SELECT DATE (LAST_LOAD_TIME) AS LOAD_DATE,
 	'{{model_id}}' AS CREATED_BY
 FROM TABLE (INFORMATION_SCHEMA.COPY_HISTORY(table_name => '{{table_full_name|upper}}', start_time => dateadd({{ var('pipe_copy_history_filter_key') }}, {{ var('pipe_copy_history_filter_value') }}, current_timestamp())))
 
+{% endif %}
 {% endfor %}

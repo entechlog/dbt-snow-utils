@@ -5,12 +5,12 @@ require-dbt-version: ">=0.18.0"
 
 vars:
   # Valid values are string "ALL" OR list of databases
-  pipe_databases: ['DEMO_DB','DEMO_DB_TEST']
+  pipe_databases: "ALL"
   filter_by_date: 
   pipe_copy_history_filter_key: "hours"
-  pipe_copy_history_filter_value: -36
+  pipe_copy_history_filter_value: -168
   pipe_usage_history_filter_key: "day"
-  pipe_usage_history_filter_value: -2
+  pipe_usage_history_filter_value: -7
 
 # Config indicated by + and applies to all files under models
 models:

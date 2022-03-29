@@ -1,4 +1,4 @@
-{% macro clone_schema(source_database, source_schemas, destination_database, destination_postfix) %}
+{% macro clone_schema(source_schemas, destination_postfix, source_database=target.database, destination_database=target.database) %}
 {% if execute %}
 
     {{ log("started running macro clone_schema" , info=False) }}
@@ -7,16 +7,16 @@
 
         {% for source_schema in source_schemas %}
 
-        {{ log("now cloning                       : " ~ source_database ~ "." ~ source_schema ~ 
-        " into " ~ destination_database ~ "." ~ source_schema ~ destination_postfix, info=True) }}
+        {{ log("now cloning " ~ source_database ~ "." ~ source_schema ~ 
+        " into " ~ destination_database ~ "." ~ source_schema ~ destination_postfix, info=False) }}
         
         {% call statement('clone_schema', fetch_result=True, auto_begin=False) -%}
-            CREATE SCHEMA IF NOT EXISTS {{ destination_database }}.{{ source_schema }}{{ destination_postfix }} 
+            CREATE OR REPLACE SCHEMA {{ destination_database }}.{{ source_schema }}{{ destination_postfix }} 
             CLONE {{ source_database }}.{{ source_schema }}
         {%- endcall %}
         
         {%- set result = load_result('clone_schema') -%}
-        {{ log(result['data'][0][0], info=True)}}
+        {{ log(destination_database ~ ', ' ~ result['data'][0][0], info=True)}}
 
         {% endfor %}
 

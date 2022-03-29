@@ -5,6 +5,13 @@
     - [dbt_snow_utils.clone_schema](#dbt_snow_utilsclone_schema)
       - [Arguments](#arguments)
       - [Usage](#usage)
+        - [run-operation](#run-operation)
+        - [pre_hook/post_hook](#pre_hookpost_hook)
+    - [dbt_snow_utils.clone_table](#dbt_snow_utilsclone_table)
+      - [Arguments](#arguments-1)
+      - [Usage](#usage-1)
+        - [run-operation](#run-operation-1)
+        - [pre_hook/post_hook](#pre_hookpost_hook-1)
 - [Contributions](#contributions)
 
 # Overview
@@ -89,18 +96,47 @@ This dbt package contains macros that can be (re)used across dbt projects with s
   ![](assets/img/snowpipe-monitoring-dashboard.jpg)
 
 ### [dbt_snow_utils.clone_schema](/macros/clone/clone_schema.sql)
-This macro clones the source schema into the destination schema
+This macro clones the source schema/schemas into the destination database.
 
 #### Arguments
-* `source_database` (required): The source database name
 * `source_schema` (required): The source schema name
-* `destination_database` (required): The destination database name
 * `destination_postfix` (required): The destination schema name postfix
+* `source_database` (optional): The source database name
+* `destination_database` (optional): The destination database name
 
 #### Usage
 
+##### run-operation
 ```
 dbt run-operation dbt_snow_utils.clone_schema --args "{'source_database': 'demo_db', 'source_schemas': ['marts', 'presentation'], 'destination_database': 'demo_db', 'destination_postfix': '_20220323_01'}"
+```
+
+##### pre_hook/post_hook
+```
+pre_hook="{{ dbt_snow_utils.clone_schema(['marts', 'presentation'], '_backup', 'demo_db', this.database) }}"
+```
+
+### [dbt_snow_utils.clone_table](/macros/clone/clone_table.sql)
+This macro clones the source table into the destination database/schema.
+
+#### Arguments
+* `source_table` (required): The source table name
+* `destination_table` (required): The destination table name
+* `source_database` (optional): The source database name
+* `source_schema` (optional): The source schema name
+* `destination_database` (optional): The destination database name
+* `destination_schema` (optional): The destination schema name
+  
+#### Usage
+
+##### run-operation
+```
+dbt run-operation clone_table --args '{"source_table": "COUNTRY_CODE", "destination_table": "COUNTRY_CODE_BKP"}'
+```
+
+##### pre_hook/post_hook
+```
+post_hook="{{ dbt_snow_utils.clone_table(this.identifier,this.identifier~'_temp', this.database, this.schema, this.database, this.schema ) }}"
 ```
 
 # Contributions

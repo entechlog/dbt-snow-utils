@@ -12,6 +12,11 @@
       - [Usage](#usage-1)
         - [run-operation](#run-operation-1)
         - [pre_hook/post_hook](#pre_hookpost_hook-1)
+    - [dbt_snow_utils.delete_records_by_column](#dbt_snow_utilsdelete_records_by_column)
+      - [Arguments](#arguments-2)
+      - [Usage](#usage-2)
+        - [run-operation](#run-operation-2)
+        - [pre_hook/post_hook](#pre_hookpost_hook-2)
 - [Contributions](#contributions)
 
 # Overview
@@ -139,5 +144,28 @@ dbt run-operation clone_table --args '{"source_table": "COUNTRY_CODE", "destinat
 post_hook="{{ dbt_snow_utils.clone_table(this.identifier,this.identifier~'_temp', this.database, this.schema, this.database, this.schema ) }}"
 ```
 
+### [dbt_snow_utils.delete_records_by_column](/macros/common/delete_records_by_column.sql)
+This macro deletes data from a table based on a where clause. Often used as pre-hook in incremental loads to delete the data.
+
+#### Arguments
+* `del_key` (required): The column name in WHERE clause of deletes
+* `del_value` (required): The value for column name in WHERE clause of deletes
+* `database` (optional): The database name
+* `schema` (optional): The schema name
+* `table` (optional): The table name
+  
+#### Usage
+
+##### run-operation
+```
+dbt run-operation delete_records_by_column --args '{"del_key": "payment_date", "del_value": "2005-05-25", "database": "DBT_DEMO", "schema": "MARTS", "table": "tmp_store_revenue"}'
+```
+
+##### pre_hook/post_hook
+```
+post_hook="{{ dbt_snow_utils.delete_records_by_column('payment_date', '2005-05-24') }}"
+
+post_hook="{{ dbt_snow_utils.delete_records_by_column('payment_date', var('start_date')) }}"
+```
 # Contributions
 Contributions to this package are welcomed. Please create issues for bugs or feature requests for enhancement ideas or PRs for any enhancement contributions.

@@ -50,4 +50,4 @@ SELECT DATE (START_TIME) AS QUERY_DATE,
 	IS_CLIENT_GENERATED_STATEMENT,
 	CONVERT_TIMEZONE('America/Los_Angeles', 'UTC', current_timestamp) AS CREATED_TIMESTAMP,
 	'{{model_id}}' AS CREATED_BY
-FROM TABLE (INFORMATION_SCHEMA.QUERY_HISTORY(END_TIME_RANGE_START => dateadd({{ var('query_history_history_filter_key') }}, {{ var('query_history_history_filter_value') }}, current_timestamp())))
+FROM TABLE (INFORMATION_SCHEMA.QUERY_HISTORY(END_TIME_RANGE_START => dateadd({{ var('query_history_filter_key') }}, {{ var('query_history_filter_value') }}, current_timestamp()), RESULT_LIMIT => {{ var('query_history_result_limit') }} ))

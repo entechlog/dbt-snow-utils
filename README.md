@@ -56,6 +56,22 @@ This dbt package contains Snowflake macros and models that can be (re)used acros
   dbt deps
   ```
 
+- Add the following model configuration under the models section of dbt_project.yml. This allows to customize the target database and schema, edit them as needed
+
+  ```yaml
+  models:
+    dbt_snow_utils:
+      staging:
+        database: "DEMO_DB"
+        schema: staging
+      marts:
+        database: "DEMO_DB"
+        schema: marts
+      presentation:
+        database: "DEMO_DB"
+        schema: presentation
+  ```
+
 # Models
 
 ## Snowpipe
@@ -100,7 +116,7 @@ This dbt package contains Snowflake macros and models that can be (re)used acros
   dbt run --select +tag:snowpipe --full-refresh
   ```
 
-- This should create two tables `presentation.snowpipe__usage_history` and `presentation.snowpipe__copy_history` which can be integrated with BI tools to build Snowpipe monitoring dashboards.
+- This should create `presentation.snowpipe__usage_history` and `presentation.snowpipe__copy_history` which can be integrated with BI tools to build Snowpipe monitoring dashboards.
 
   ![](assets/img/snowpipe-monitoring-dashboard.jpg)
 
@@ -120,15 +136,16 @@ This dbt package contains Snowflake macros and models that can be (re)used acros
   vars:
     dbt_snow_utils:
       filter_by_date: 
-      query_history_history_filter_key: "hours"
-      query_history_history_filter_value: -144
+      query_history_filter_key: "hours"
+      query_history_filter_value: -144
+      query_history_result_limit: 10000
   ```
 
 
 #### Arguments
 * `filter_by_date` (optional): The date for filtering data for incremental loads. Should be specified in `YYYY-MM-DD` format, if none specified process will use current date
-* `query_history_history_filter_key` (optional): The filter key for table function QUERY_HISTORY. Some valid values are `day`, `hour`, `minute`, `second` etc. See [here](https://docs.snowflake.com/en/sql-reference/functions-date-time.html#label-supported-date-time-parts) for list of date and time parts
-* `query_history_history_filter_value` (optional): The filter value for table function QUERY_HISTORY. Should be negative value and relate to the valid values key can accept
+* `query_history_filter_key` (optional): The filter key for table function QUERY_HISTORY. Some valid values are `day`, `hour`, `minute`, `second` etc. See [here](https://docs.snowflake.com/en/sql-reference/functions-date-time.html#label-supported-date-time-parts) for list of date and time parts
+* `query_history_filter_value` (optional): The filter value for table function QUERY_HISTORY. Should be negative value and relate to the valid values key can accept
 
 #### Usage
 
@@ -140,7 +157,7 @@ This dbt package contains Snowflake macros and models that can be (re)used acros
   dbt run --select +tag:snowflake --full-refresh
   ```
 
-- This should create two tables `presentation.snowflake__query_history` which can be integrated with BI tools to build Snowflake monitoring dashboards.
+- This should create `presentation.snowflake__query_history` which can be integrated with BI tools to build Snowflake monitoring dashboards.
 
 # Macros
 ### [dbt_snow_utils.clone_schema](/macros/clone/clone_schema.sql)

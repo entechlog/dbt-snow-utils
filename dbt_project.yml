@@ -11,6 +11,8 @@ vars:
   pipe_copy_history_filter_value: -168
   pipe_usage_history_filter_key: "day"
   pipe_usage_history_filter_value: -7
+  query_history_history_filter_key: "hours"
+  query_history_history_filter_value: -144
 
 # Config indicated by + and applies to all files under models
 models:

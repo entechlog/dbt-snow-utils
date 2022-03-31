@@ -1,0 +1,29 @@
+name: 'dbt_snow_utils_integration_tests'
+version: '1.0'
+config-version: 2
+
+profile: 'dbt-snow-utils-integration-tests'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+
+target-path: "target"
+clean-targets:
+    - "target"
+    - "dbt_packages"
+    - "logs"
+
+models:
+  dbt_snow_utils:
+    staging:
+      database: "DEMO_DB"
+      schema: staging
+    marts:
+      database: "DEMO_DB"
+      schema: marts
+    presentation:
+      database: "DEMO_DB"
+      schema: presentation

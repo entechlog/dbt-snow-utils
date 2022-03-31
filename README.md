@@ -1,26 +1,32 @@
 - [Overview](#overview)
 - [Installation Instructions](#installation-instructions)
-- [Macro and Model Details](#macro-and-model-details)
-    - [dbt_snow_utils.get_snowpipe_details](#dbt_snow_utilsget_snowpipe_details)
-    - [dbt_snow_utils.clone_schema](#dbt_snow_utilsclone_schema)
+- [Models](#models)
+    - [snowpipe__copy_history and [snowpipe__usage_history](/models/staging/snowpipe/stg_snowpipe__usage_history.sql)](#snowpipe__copy_history-and-snowpipe__usage_history)
       - [Arguments](#arguments)
       - [Usage](#usage)
+    - [snowflake__query_history](#snowflake__query_history)
+      - [Arguments](#arguments-1)
+      - [Usage](#usage-1)
+- [Macros](#macros)
+    - [dbt_snow_utils.clone_schema](#dbt_snow_utilsclone_schema)
+      - [Arguments](#arguments-2)
+      - [Usage](#usage-2)
         - [run-operation](#run-operation)
         - [pre_hook/post_hook](#pre_hookpost_hook)
     - [dbt_snow_utils.clone_table](#dbt_snow_utilsclone_table)
-      - [Arguments](#arguments-1)
-      - [Usage](#usage-1)
+      - [Arguments](#arguments-3)
+      - [Usage](#usage-3)
         - [run-operation](#run-operation-1)
         - [pre_hook/post_hook](#pre_hookpost_hook-1)
     - [dbt_snow_utils.delete_records_by_column](#dbt_snow_utilsdelete_records_by_column)
-      - [Arguments](#arguments-2)
-      - [Usage](#usage-2)
+      - [Arguments](#arguments-4)
+      - [Usage](#usage-4)
         - [run-operation](#run-operation-2)
         - [pre_hook/post_hook](#pre_hookpost_hook-2)
 - [Contributions](#contributions)
 
 # Overview
-This dbt package contains macros that can be (re)used across dbt projects with snowflake. 
+This dbt package contains Snowflake macros and models that can be (re)used across dbt projects with snowflake as target database. 
 
 # Installation Instructions
 
@@ -47,9 +53,9 @@ This dbt package contains macros that can be (re)used across dbt projects with s
   dbt deps
   ```
 
-# Macro and Model Details
+# Models
 
-### [dbt_snow_utils.get_snowpipe_details](/macros/snowpipe/get_snowpipe_details.sql)
+### [snowpipe__copy_history](/models/staging/snowpipe/stg_snowpipe__copy_history.sql) and [snowpipe__usage_history](/models/staging/snowpipe/stg_snowpipe__usage_history.sql)
 - Snowpipe is Snowflake's continuous data ingestion service. Currently there is not a consolidated dashboard in snowflake which shows the summary of Snowpipe. 
   
 - Copy history in [Snowsight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html#) gives a dashboard for table level copy history 
@@ -58,8 +64,6 @@ This dbt package contains macros that can be (re)used across dbt projects with s
 
 - This process materialize data from `PIPE_USAGE_HISTORY` and `COPY_HISTORY` into a snowflake table. The target tables can be used to visualize the Snowpipe copy history and usage history with the help of dbt macro `get_snowpipe_details` and dbt models with tag `+tag:snowpipe`
 
-- To use this macro and model, [Install the package](#installation-instructions)
-  
 - Add the following variables under vars section of `dbt_project.yml`. This allows to customize the data retrieval filters
 
   ```yaml
@@ -73,33 +77,67 @@ This dbt package contains macros that can be (re)used across dbt projects with s
       pipe_usage_history_filter_value: -2
   ```
 
-- Add the following model configuration under models section of `dbt_project.yml`. This allows to customize the destination database and schema
-  ```yaml
-  models:
-    dbt_snow_utils:
-      staging:
-        database: "DEMO_DB"
-        schema: staging
-      marts:
-        database: "DEMO_DB"
-        schema: marts
-      presentation:
-        database: "DEMO_DB"
-        schema: presentation
-  ```
+#### Arguments
+* `pipe_databases` (optional): The database name with Snowpipes. Valid values are string “ALL” OR list of databases
+* `filter_by_date` (optional): The date for filtering data for incremental loads. Should be specified in `YYYY-MM-DD` format, if none specified process will use current date
+* `pipe_copy_history_filter_key` (optional): The filter key for table function COPY_HISTORY. Some valid values are `day`, `hour`, `minute`, `second` etc. See [here](https://docs.snowflake.com/en/sql-reference/functions-date-time.html#label-supported-date-time-parts) for list of date and time parts
+* `pipe_copy_history_filter_value` (optional): The filter value for table function COPY_HISTORY. Should be negative value and relate to the valid values key can accept
+* `pipe_usage_history_filter_key` (optional): The filter key for table function USAGE_HISTORY. Some valid values are `day`, `hour`, `minute`, `second` etc. See [here](https://docs.snowflake.com/en/sql-reference/functions-date-time.html#label-supported-date-time-parts) for list of date and time parts
+* `pipe_usage_history_filter_value` (optional): The filter value for table function USAGE_HISTORY. Should be negative value and relate to the valid values key can accept
+
+#### Usage
 
 - Run the models using command
   
   ```bash
   dbt run --select +tag:snowpipe --vars '{"filter_by_date": "2022-03-22"}'
   OR
-  dbt run --select +tag:snowpipe
+  dbt run --select +tag:snowpipe --full-refresh
   ```
 
-- This should create two tables `presentation.snowpipe__usage_history` and `presentation.snowpipe__copy_history` which can be integrated with BI tools to build snowpipe monitoring dashboards.
+- This should create two tables `presentation.snowpipe__usage_history` and `presentation.snowpipe__copy_history` which can be integrated with BI tools to build Snowpipe monitoring dashboards.
 
   ![](assets/img/snowpipe-monitoring-dashboard.jpg)
 
+
+### [snowflake__query_history](/models/marts/snowflake/mart_snowflake__query_history.sql)
+- This process materialize data from `QUERY_HISTORY ` into a snowflake table. 
+
+- The role used by dbt should have monitor access so it can fetch query executed by all users.
+  
+  ```sql
+  GRANT MONITOR ON WAREHOUSE <ALL-SNOWFLAKE-WAREHOUSE> to role <DBT-ROLE>;
+  ```
+
+- Add the following variables under vars section of `dbt_project.yml`. This allows to customize the data retrieval filters
+
+  ```yaml
+  vars:
+    dbt_snow_utils:
+      filter_by_date: 
+      query_history_history_filter_key: "hours"
+      query_history_history_filter_value: -144
+  ```
+
+
+#### Arguments
+* `filter_by_date` (optional): The date for filtering data for incremental loads. Should be specified in `YYYY-MM-DD` format, if none specified process will use current date
+* `query_history_history_filter_key` (optional): The filter key for table function QUERY_HISTORY. Some valid values are `day`, `hour`, `minute`, `second` etc. See [here](https://docs.snowflake.com/en/sql-reference/functions-date-time.html#label-supported-date-time-parts) for list of date and time parts
+* `query_history_history_filter_value` (optional): The filter value for table function QUERY_HISTORY. Should be negative value and relate to the valid values key can accept
+
+#### Usage
+
+- Run the models using command
+  
+  ```bash
+  dbt run --select +tag:snowflake --vars '{"filter_by_date": "2022-03-30"}'
+  OR
+  dbt run --select +tag:snowflake --full-refresh
+  ```
+
+- This should create two tables `presentation.snowflake__query_history` which can be integrated with BI tools to build Snowflake monitoring dashboards.
+
+# Macros
 ### [dbt_snow_utils.clone_schema](/macros/clone/clone_schema.sql)
 This macro clones the source schema/schemas into the destination database.
 

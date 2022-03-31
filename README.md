@@ -1,9 +1,12 @@
 - [Overview](#overview)
 - [Installation Instructions](#installation-instructions)
 - [Models](#models)
-    - [snowpipe__copy_history and [snowpipe__usage_history](/models/staging/snowpipe/stg_snowpipe__usage_history.sql)](#snowpipe__copy_history-and-snowpipe__usage_history)
+  - [Snowpipe](#snowpipe)
+    - [snowpipe__copy_history](#snowpipe__copy_history)
+    - [snowpipe__usage_history](#snowpipe__usage_history)
       - [Arguments](#arguments)
       - [Usage](#usage)
+  - [Snowflake](#snowflake)
     - [snowflake__query_history](#snowflake__query_history)
       - [Arguments](#arguments-1)
       - [Usage](#usage-1)
@@ -55,7 +58,9 @@ This dbt package contains Snowflake macros and models that can be (re)used acros
 
 # Models
 
-### [snowpipe__copy_history](/models/staging/snowpipe/stg_snowpipe__copy_history.sql) and [snowpipe__usage_history](/models/staging/snowpipe/stg_snowpipe__usage_history.sql)
+## Snowpipe
+### [snowpipe__copy_history](/models/staging/snowpipe/stg_snowpipe__copy_history.sql)
+### [snowpipe__usage_history](/models/staging/snowpipe/stg_snowpipe__usage_history.sql)
 - Snowpipe is Snowflake's continuous data ingestion service. Currently there is not a consolidated dashboard in snowflake which shows the summary of Snowpipe. 
   
 - Copy history in [Snowsight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html#) gives a dashboard for table level copy history 
@@ -99,7 +104,7 @@ This dbt package contains Snowflake macros and models that can be (re)used acros
 
   ![](assets/img/snowpipe-monitoring-dashboard.jpg)
 
-
+## Snowflake
 ### [snowflake__query_history](/models/marts/snowflake/mart_snowflake__query_history.sql)
 - This process materialize data from `QUERY_HISTORY ` into a snowflake table. 
 

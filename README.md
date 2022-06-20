@@ -67,9 +67,6 @@ This dbt package contains Snowflake macros and models that can be (re)used acros
       marts:
         database: "DEMO_DB"
         schema: marts
-      presentation:
-        database: "DEMO_DB"
-        schema: presentation
   ```
 
 # Models
@@ -81,7 +78,7 @@ This dbt package contains Snowflake macros and models that can be (re)used acros
   
 - Copy history in [Snowsight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html#) gives a dashboard for table level copy history 
   
-- Table functions `INFORMATION_SCHEMA.PIPE_USAGE_HISTORY` and `INFORMATION_SCHEMA.COPY_HISTORY` has copy history but its kept retained for 14 days
+- Table functions `INFORMATION_SCHEMA.PIPE_USAGE_HISTORY` and `INFORMATION_SCHEMA.COPY_HISTORY` has copy history but its kept retained for 14 days. The table function avoids the 10,000 row limitation of the LOAD_HISTORY View but is also a slow operation. So adjust SQL predicates to filter the data based on your volume
 
 - This process materialize data from `PIPE_USAGE_HISTORY` and `COPY_HISTORY` into a snowflake table. The target tables can be used to visualize the Snowpipe copy history and usage history with the help of dbt macro `get_snowpipe_details` and dbt models with tag `+tag:snowpipe`
 
@@ -116,7 +113,7 @@ This dbt package contains Snowflake macros and models that can be (re)used acros
   dbt run --select +tag:snowpipe --full-refresh
   ```
 
-- This should create `presentation.snowpipe__usage_history` and `presentation.snowpipe__copy_history` which can be integrated with BI tools to build Snowpipe monitoring dashboards.
+- This should create `snowpipe__usage_history` and `snowpipe__copy_history` which can be integrated with BI tools to build Snowpipe monitoring dashboards.
 
   ![](assets/img/snowpipe-monitoring-dashboard.jpg)
 
@@ -157,7 +154,7 @@ This dbt package contains Snowflake macros and models that can be (re)used acros
   dbt run --select +tag:snowflake --full-refresh
   ```
 
-- This should create `presentation.snowflake__query_history` which can be integrated with BI tools to build Snowflake monitoring dashboards.
+- This should create `snowflake__query_history` which can be integrated with BI tools to build Snowflake monitoring dashboards.
 
 # Macros
 ### [dbt_snow_utils.clone_schema](/macros/clone/clone_schema.sql)
@@ -173,12 +170,12 @@ This macro clones the source schema/schemas into the destination database.
 
 ##### run-operation
 ```
-dbt run-operation dbt_snow_utils.clone_schema --args "{'source_database': 'demo_db', 'source_schemas': ['marts', 'presentation'], 'destination_database': 'demo_db', 'destination_postfix': '_20220323_01'}"
+dbt run-operation dbt_snow_utils.clone_schema --args "{'source_database': 'demo_db', 'source_schemas': ['dim', 'fact', 'utils'], 'destination_database': 'demo_db', 'destination_postfix': '_20220323_01'}"
 ```
 
 ##### pre_hook/post_hook
 ```
-pre_hook="{{ dbt_snow_utils.clone_schema(['marts', 'presentation'], '_backup', 'demo_db', this.database) }}"
+pre_hook="{{ dbt_snow_utils.clone_schema(['dim', 'fact', 'utils'], '_backup', 'demo_db', this.database) }}"
 ```
 
 ### [dbt_snow_utils.clone_table](/macros/clone/clone_table.sql)

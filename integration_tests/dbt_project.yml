@@ -19,11 +19,8 @@ clean-targets:
 models:
   dbt_snow_utils:
     staging:
-      database: "DEMO_DB"
-      schema: staging
-    marts:
-      database: "DEMO_DB"
-      schema: marts
-    presentation:
-      database: "DEMO_DB"
-      schema: presentation
+      database: "DEV_ENTECHLOG_STAGING_DB"
+      schema: utils
+    dw:
+      database: "DEV_ENTECHLOG_DW_DB"
+      schema: utils

@@ -1,4 +1,4 @@
-{% macro clone_tables(source_schemas, source_database=target.database, destination_database=target.database) %}
+{% macro clone_tables(source_schemas, source_database=target.database, destination_database=target.database, truncate_table_flag='False') %}
 {% if execute %}
 
     {{ log("started running macro clone_tables" , info=False) }}
@@ -22,6 +22,7 @@
             {% for tmp_table in source_tables %}
 
                 {% set source_table = tmp_table[1] %}
+                {% set destination_table = source_table %}
 
                 {% call statement('clone_table', fetch_result=True, auto_begin=False) -%}
                     CREATE OR REPLACE TABLE {{ destination_database }}.{{ destination_schema }}.{{ destination_table }} 
@@ -31,12 +32,16 @@
                 {%- set result = load_result('clone_table') -%}
                 {{ log(destination_database ~ '.' ~ destination_schema ~ ', ' ~ result['data'][0][0], info=True)}}
 
-                {% call statement('truncate_table', fetch_result=True, auto_begin=False) -%}
-                    TRUNCATE TABLE IF EXISTS {{ destination_database }}.{{ destination_schema }}.{{ destination_table }}
-                {%- endcall %}
+                {% if truncate_table_flag == 'True' %}
 
-                {%- set result = load_result('truncate_table') -%}
-                {{ log(destination_database ~ '.' ~ destination_schema ~ ', ' ~ result['data'][0][0], info=True)}}
+                    {% call statement('truncate_table', fetch_result=True, auto_begin=False) -%}
+                        TRUNCATE TABLE IF EXISTS {{ destination_database }}.{{ destination_schema }}.{{ destination_table }}
+                    {%- endcall %}
+
+                    {%- set result = load_result('truncate_table') -%}
+                    {{ log(destination_database ~ '.' ~ destination_schema ~ ', Truncate table ' ~ result['data'][0][0], info=True)}}
+
+                {% endif %}
 
             {% endfor %}
 

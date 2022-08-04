@@ -11,7 +11,7 @@
       - [Arguments](#arguments-1)
       - [Usage](#usage-1)
 - [Macros](#macros)
-    - [dbt_snow_utils.clone_schema](#dbt_snow_utilsclone_schema)
+    - [dbt_snow_utils.clone_schemas](#dbt_snow_utilsclone_schemas)
       - [Arguments](#arguments-2)
       - [Usage](#usage-2)
         - [run-operation](#run-operation)
@@ -157,7 +157,7 @@ This dbt package contains Snowflake macros and models that can be (re)used acros
 - This should create `snowflake__query_history` which can be integrated with BI tools to build Snowflake monitoring dashboards.
 
 # Macros
-### [dbt_snow_utils.clone_schema](/macros/clone/clone_schema.sql)
+### [dbt_snow_utils.clone_schemas](/macros/clone/clone_schemas.sql)
 This macro clones the source schema/schemas into the destination database.
 
 #### Arguments
@@ -170,12 +170,12 @@ This macro clones the source schema/schemas into the destination database.
 
 ##### run-operation
 ```
-dbt run-operation dbt_snow_utils.clone_schema --args "{'source_database': 'demo_db', 'source_schemas': ['dim', 'fact', 'utils'], 'destination_database': 'demo_db', 'destination_postfix': '_20220323_01'}"
+dbt run-operation dbt_snow_utils.clone_schemas --args "{'source_database': 'demo_db', 'source_schemas': ['dim', 'fact', 'utils'], 'destination_database': 'demo_db', 'destination_postfix': '_20220323_01'}"
 ```
 
 ##### pre_hook/post_hook
 ```
-pre_hook="{{ dbt_snow_utils.clone_schema(['dim', 'fact', 'utils'], '_backup', 'demo_db', this.database) }}"
+pre_hook="{{ dbt_snow_utils.clone_schemas(['dim', 'fact', 'utils'], '_backup', 'demo_db', this.database) }}"
 ```
 
 ### [dbt_snow_utils.clone_table](/macros/clone/clone_table.sql)

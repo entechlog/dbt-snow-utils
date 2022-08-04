@@ -1,0 +1,15 @@
+metrics:
+  - model: ref('mart_snowflake__query_history')
+    name: credits_used
+    description: "Snowflake cloud credit used"
+    label: Credits Used
+    type: sum
+    sql: credits_used_cloud_services
+    timestamp: query_date
+    # dimensions:
+    #   - date
+    #   - user
+    time_grains:
+      - day
+      - week
+      - month

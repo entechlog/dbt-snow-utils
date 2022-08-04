@@ -21,11 +21,16 @@
       - [Usage](#usage-3)
         - [run-operation](#run-operation-1)
         - [pre_hook/post_hook](#pre_hookpost_hook-1)
-    - [dbt_snow_utils.delete_records_by_column](#dbt_snow_utilsdelete_records_by_column)
+    - [dbt_snow_utils.clone_tables](#dbt_snow_utilsclone_tables)
       - [Arguments](#arguments-4)
       - [Usage](#usage-4)
         - [run-operation](#run-operation-2)
         - [pre_hook/post_hook](#pre_hookpost_hook-2)
+    - [dbt_snow_utils.delete_records_by_column](#dbt_snow_utilsdelete_records_by_column)
+      - [Arguments](#arguments-5)
+      - [Usage](#usage-5)
+        - [run-operation](#run-operation-3)
+        - [pre_hook/post_hook](#pre_hookpost_hook-3)
 - [Contributions](#contributions)
 
 # Overview
@@ -199,6 +204,27 @@ dbt run-operation clone_table --args '{"source_table": "COUNTRY_CODE", "destinat
 ##### pre_hook/post_hook
 ```
 post_hook="{{ dbt_snow_utils.clone_table(this.identifier,this.identifier~'_temp', this.database, this.schema, this.database, this.schema ) }}"
+```
+
+### [dbt_snow_utils.clone_tables](/macros/clone/clone_tables.sql)
+This macro clones all the tables from source database/schema into the destination database/schema. This also provides an option to truncate the tables after cloning if you just need the table structure and not data.
+
+#### Arguments
+* `source_schemas` (required): The list of source schema names
+* `source_database` (optional): The source database name
+* `destination_database` (optional): The destination database name
+* `truncate_table_flag` (optional): Flag to truncate data after copy, When enabled only table structure is copied and not data
+  
+#### Usage
+
+##### run-operation
+```
+dbt run-operation clone_tables --args "{'source_database': 'DEV_ENTECHLOG_DW_DB', 'source_schemas': ['dim', 'fact', 'utils'], 'destination_database': 'DEV_ENTECHLOG_DEMO_DB', 'truncate_table_flag': 'True'}"
+```
+
+##### pre_hook/post_hook
+```
+pre_hook="{{ dbt_snow_utils.clone_tables(['dim', 'fact', 'utils'], 'DEV_ENTECHLOG_DW_DB', 'DEV_ENTECHLOG_DEMO_DB', 'True') }}"
 ```
 
 ### [dbt_snow_utils.delete_records_by_column](/macros/common/delete_records_by_column.sql)

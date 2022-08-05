@@ -20,6 +20,8 @@ models:
   dbt_snow_utils:
     +materialized: table
     staging:
+      +schema: staging
       +materialized: view
     dw:
+      +schema: utils
       +materialized: incremental

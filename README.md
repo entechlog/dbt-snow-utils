@@ -2,35 +2,44 @@
 - [Installation Instructions](#installation-instructions)
 - [Models](#models)
   - [Snowpipe](#snowpipe)
-    - [snowpipe__copy_history](#snowpipe__copy_history)
-    - [snowpipe__usage_history](#snowpipe__usage_history)
+    - [snowpipe\_\_copy\_history](#snowpipe__copy_history)
+    - [snowpipe\_\_usage\_history](#snowpipe__usage_history)
       - [Arguments](#arguments)
       - [Usage](#usage)
   - [Snowflake](#snowflake)
-    - [snowflake__query_history](#snowflake__query_history)
+    - [snowflake\_\_query\_history](#snowflake__query_history)
       - [Arguments](#arguments-1)
       - [Usage](#usage-1)
 - [Macros](#macros)
-    - [dbt_snow_utils.clone_schemas](#dbt_snow_utilsclone_schemas)
+    - [dbt\_snow\_utils.clone\_schemas](#dbt_snow_utilsclone_schemas)
       - [Arguments](#arguments-2)
       - [Usage](#usage-2)
         - [run-operation](#run-operation)
-        - [pre_hook/post_hook](#pre_hookpost_hook)
-    - [dbt_snow_utils.clone_table](#dbt_snow_utilsclone_table)
+        - [pre\_hook/post\_hook](#pre_hookpost_hook)
+    - [dbt\_snow\_utils.clone\_table](#dbt_snow_utilsclone_table)
       - [Arguments](#arguments-3)
       - [Usage](#usage-3)
         - [run-operation](#run-operation-1)
-        - [pre_hook/post_hook](#pre_hookpost_hook-1)
-    - [dbt_snow_utils.clone_tables](#dbt_snow_utilsclone_tables)
+        - [pre\_hook/post\_hook](#pre_hookpost_hook-1)
+    - [dbt\_snow\_utils.clone\_tables](#dbt_snow_utilsclone_tables)
       - [Arguments](#arguments-4)
       - [Usage](#usage-4)
         - [run-operation](#run-operation-2)
-        - [pre_hook/post_hook](#pre_hookpost_hook-2)
-    - [dbt_snow_utils.delete_records_by_column](#dbt_snow_utilsdelete_records_by_column)
+        - [pre\_hook/post\_hook](#pre_hookpost_hook-2)
+    - [dbt\_snow\_utils.delete\_records\_by\_column](#dbt_snow_utilsdelete_records_by_column)
       - [Arguments](#arguments-5)
       - [Usage](#usage-5)
         - [run-operation](#run-operation-3)
-        - [pre_hook/post_hook](#pre_hookpost_hook-3)
+        - [pre\_hook/post\_hook](#pre_hookpost_hook-3)
+    - [dbt\_snow\_utils.delete\_orphaned\_tables](#dbt_snow_utilsdelete_orphaned_tables)
+      - [Arguments](#arguments-6)
+      - [Usage](#usage-6)
+        - [run-operation](#run-operation-4)
+        - [pre\_hook/post\_hook](#pre_hookpost_hook-4)
+- [Materialization](#materialization)
+  - [stage2table](#stage2table)
+    - [Configuration](#configuration)
+    - [Usage](#usage-7)
 - [Contributions](#contributions)
 
 # Overview
@@ -250,5 +259,70 @@ post_hook="{{ dbt_snow_utils.delete_records_by_column('payment_date', '2005-05-2
 
 post_hook="{{ dbt_snow_utils.delete_records_by_column('payment_date', var('start_date')) }}"
 ```
+
+### [dbt_snow_utils.delete_orphaned_tables](/macros/common/delete_orphaned_tables.sql)
+This macro deletes data from a table based on a where clause. Often used as pre-hook in incremental loads to delete the data.
+
+#### Arguments
+* `databases_list` (optional): A list of databases (and optionally schemas in the format database.schema) to search for orphaned tables/views. Defaults to the target database defined in your dbt profile.
+* `dry_run` (optional): If set to True, the macro will log the tables/views that would be deleted without actually performing the deletion. Defaults to False.
+
+  
+#### Usage
+
+##### run-operation
+
+* To perform a dry run (log but do not delete) on specific databases:
+```
+dbt run-operation delete_orphaned_tables --args "{databases_list: ['DATABASE1', 'DATABASE2'], dry_run: True}"
+```
+
+* To delete orphaned tables/views in the default target database:
+```
+dbt run-operation delete_orphaned_tables --args "{dry_run: False}"
+```
+
+* To delete orphaned tables/views in specific databases (e.g., 'DATABASE1' and 'DATABASE2'):
+```
+dbt run-operation delete_orphaned_tables --args "{databases_list: ['DATABASE1', 'DATABASE2'], dry_run: False}"
+```
+
+* To delete orphaned tables/views in specific databases/schemas (e.g., 'DATABASE1' and 'DATABASE2.SCHEMA1'):
+```
+dbt run-operation delete_orphaned_tables --args "{databases_list: ['DATABASE1', 'DATABASE2.SCHEMA1'], dry_run: False}"
+```
+
+##### pre_hook/post_hook
+```
+```
+
+# Materialization
+
+## stage2table
+This materialization strategy loads data from a configured external stage (cloud storage location) directly into a Snowflake table using the COPY INTO command or an INSERT statement.
+
+### Configuration
+* `stage_name` (optional): The name of the Snowflake stage object to be used or created. Defaults to the model's identifier with _stage postfix.
+* `url` (required): The URL of the external stage (cloud storage path).
+* `file_format` (optional): The file format option for loading data. Defaults to (type = PARQUET) if not specified.
+* `mode` (optional): The loading mode, either COPY or INSERT. Defaults to COPY.
+* `pattern` (optional): A regex pattern to match files in the external stage.
+
+### Usage
+Configure this materialization in your model's configuration block in dbt_project.yml or within the model SQL file itself using {{ config(materialized = 'stage2table', ...) }}.
+
+```jinja
+{{
+    config(
+        materialized="stage2table",
+        url="s3://" ~ var("s3_bucket") ~ "/cricsheet/all_player_data/",
+        file_format="(TYPE = CSV SKIP_HEADER = 1 TRIM_SPACE = TRUE ESCAPE_UNENCLOSED_FIELD = NONE)",
+        mode="INSERT",
+        tags=["source", "cricsheet"],
+        pre_hook="{{ delete_data('FILE_LAST_MODIFIED_DT', var('batch_cycle_date'), this) }}",
+    )
+}}
+```
+
 # Contributions
 Contributions to this package are welcomed. Please create issues for bugs or feature requests for enhancement ideas or PRs for any enhancement contributions.

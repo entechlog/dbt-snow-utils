@@ -8,7 +8,7 @@
 {% set model_id = model.unique_id | string %}
 
 SELECT DATE (START_TIME) AS LOAD_DATE,
-	{{ dbt_utils.surrogate_key(['LOAD_DATE']) }} AS RECORD_ID,
+	{{ dbt_utils.generate_surrogate_key(['LOAD_DATE']) }} AS RECORD_ID,
 	CREDITS_USED,
 	BYTES_INSERTED,
 	FILES_INSERTED,

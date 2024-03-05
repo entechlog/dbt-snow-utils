@@ -20,7 +20,7 @@
 {%- set loop_counter.value = loop_counter.value + 1 -%}
 
 SELECT DATE (LAST_LOAD_TIME) AS LOAD_DATE,
-	{{ dbt_utils.surrogate_key(['FILE_NAME','STAGE_LOCATION', 'LOAD_DATE']) }} AS RECORD_ID,
+	{{ dbt_utils.generate_surrogate_key(['FILE_NAME','STAGE_LOCATION', 'LOAD_DATE']) }} AS RECORD_ID,
 	FILE_NAME,
 	STAGE_LOCATION,
 	LAST_LOAD_TIME,
